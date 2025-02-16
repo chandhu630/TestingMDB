@@ -9,8 +9,6 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
-
 # Node.js dependencies
 node_modules/
 .next/
