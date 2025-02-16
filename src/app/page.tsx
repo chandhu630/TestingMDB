@@ -1,6 +1,44 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [todos, setTodos] = useState<{ _id: string; title: string; completed: boolean }[]>([]);
+  const [newTodo, setNewTodo] = useState("");
+
+  // Fetch todos
+  useEffect(() => {
+    const fetchTodos = async () => {
+      const res = await fetch("/api/todo");
+      const data = await res.json();
+      setTodos(data);
+    };
+    fetchTodos();
+  }, []);
+
+  // Add todo
+  const addTodo = async () => {
+    if (!newTodo.trim()) return;
+    const res = await fetch("/api/todo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: newTodo }),
+    });
+    const data = await res.json();
+    setTodos([...todos, data]);
+    setNewTodo("");
+  };
+
+  // Delete todo
+  const deleteTodo = async (id: string) => {
+    await fetch("/api/todo", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    setTodos(todos.filter((todo) => todo._id !== id));
+  };
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
@@ -12,7 +50,6 @@ export default function Home() {
           height={38}
           priority
         />
-        
         <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
           <li className="mb-2">
             Get started by editing{" "}
