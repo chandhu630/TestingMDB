@@ -6,12 +6,19 @@ export default function Home() {
   const [todos, setTodos] = useState<{ _id: string; title: string; completed: boolean }[]>([]);
   const [newTodo, setNewTodo] = useState("");
 
+  const API_URL = typeof window !== "undefined" ? "" : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
   // Fetch todos
   useEffect(() => {
     const fetchTodos = async () => {
-      const res = await fetch("/api/todos");
-      const data = await res.json();
-      setTodos(data);
+      try {
+        const res = await fetch(`${API_URL}/api/todo`);
+        if (!res.ok) throw new Error("Failed to fetch todos");
+        const data = await res.json();
+        setTodos(data);
+      } catch (error) {
+        console.error("Error fetching todos:", error);
+      }
     };
     fetchTodos();
   }, []);
@@ -19,24 +26,34 @@ export default function Home() {
   // Add todo
   const addTodo = async () => {
     if (!newTodo.trim()) return;
-    const res = await fetch("/api/todos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: newTodo }),
-    });
-    const data = await res.json();
-    setTodos([...todos, data]);
-    setNewTodo("");
+    try {
+      const res = await fetch(`${API_URL}/api/todo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTodo }),
+      });
+      if (!res.ok) throw new Error("Failed to add todo");
+      const data = await res.json();
+      setTodos([...todos, data]);
+      setNewTodo("");
+    } catch (error) {
+      console.error("Error adding todo:", error);
+    }
   };
 
   // Delete todo
   const deleteTodo = async (id: string) => {
-    await fetch("/api/todos", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
-    setTodos(todos.filter((todo) => todo._id !== id));
+    try {
+      const res = await fetch(`${API_URL}/api/todo`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error("Failed to delete todo");
+      setTodos(todos.filter((todo) => todo._id !== id));
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+    }
   };
 
   return (
